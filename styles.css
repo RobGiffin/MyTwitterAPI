@@ -1,0 +1,82 @@
+body {
+    /* font-family: 'Roboto', sans-serif; */
+    font-family: 'Open Sans', sans-serif;
+    background:#fefefe;
+}
+
+a {
+    text-decoration:none;
+    color:#ED4956;
+}
+
+a:hover {
+    text-decoration:underline;
+}
+
+hr {
+    background-color: #b7b9bc; 
+    height: 1px; 
+    border: 0; 
+}
+
+nav {
+    /* background-color:white; */
+    font-family: 'Montserrat', sans-serif;
+}
+
+footer {
+    padding:5px 0 5px;
+    font-size:0.8em;
+}
+
+.clearfix {
+    /* overflow:auto; */
+    overflow:hidden;
+}
+
+.tweetText {
+    float:left;
+    /* height:160px; */
+    width:60%;
+    padding-left:15px;
+}
+
+.tweetImageDiv {
+    float:left;
+    /* height:160px; */
+    width:310px;
+}
+
+@media screen and (max-width:832px) {
+    .tweetText {
+        float:left;
+        /* height:160px; */
+        width:52%;
+        padding-left:10px;
+    }
+}
+
+@media screen and (max-width:700px) {
+    .tweetText {
+        float:left;
+        /* height:160px; */
+        width:45%;
+        padding-left:10px;
+    }
+}
+
+@media screen and (max-width:640px) {
+    .tweetText {
+        float:left;
+        /* height:160px; */
+        width:100%;
+        padding-left:10px;
+    }
+
+    .tweetImageDiv {
+        float:none;
+        margin:0 auto;
+        /* height:160px; */
+        width:310px;
+    }
+}
