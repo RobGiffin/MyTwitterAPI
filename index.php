@@ -1,60 +1,64 @@
-
 <?php
-
 // Error debugging //
-//ini_set('display_errors', 'On');
+ini_set('display_errors', 'Off');
 //error_reporting(E_ALL);
 
-// Include TwitterAPI to handle the heavy lifting //
-require_once('TwitterAPIExchange.php');
+/*
+* using file_get_contents
+*/
 
-// Set Twitter account //
-//$TwitterAccount = "BBCBreaking";
-//$TwitterAccount = "NASA";
+$key = 'YOUR KEYS';
+$secret = 'YOUR KEYS';
+// replace with ACCOUNT
+$api_endpoint = 'https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=@_ACCOUNT&count=5'; // endpoint must support "Application-only authentication"
 
-// GET account html parameter, if none then use instagram. //
-
-// MyTwitterApp/index.php?account=nasa
-
-if (isset($_GET['account'])) {
-    // echo $_GET['account'];
-    $TwitterAccount = $_GET['account'];
-}else{
-    // Fallback behaviour goes here
-    $TwitterAccount = "Instagram";
-}
-
-
-// oauth linked to your Twitter account
-$settings = array(
-    'oauth_access_token' => "YOUR KEYS",
-    'oauth_access_token_secret' => "YOUR KEYS",
-    'consumer_key' => "YOUR KEYS",
-    'consumer_secret' => "YOUR KEYS"
+// request token
+$basic_credentials = base64_encode($key.':'.$secret);
+$opts = array('http' =>
+    array(
+        'method'  => 'POST',
+        'header'  =>    'Authorization: Basic '.$basic_credentials."\r\n".
+        "Content-type: application/x-www-form-urlencoded;charset=UTF-8\r\n",
+        'content' => 'grant_type=client_credentials'
+    )
 );
 
-$url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
+$context  = stream_context_create($opts);
 
-$requestMethod = "GET";
-// define get fields / search terms ref  https://dev.twitter.com/rest/public/search
-$getfield = '?screen_name=' . $TwitterAccount . '&count=100';
+// send request
+$pre_token = file_get_contents('https://api.twitter.com/oauth2/token', false, $context);
 
-$twitter = new TwitterAPIExchange($settings);
+$token = json_decode($pre_token, true);
 
-// get Json data passing variables above using the TwitterAPIExchange scripts
-$tweets = json_decode($twitter->setGetfield($getfield)
-->buildOauth($url, $requestMethod)
-->performRequest(),$assoc = TRUE);
+if (isset($token["token_type"]) && $token["token_type"] == "bearer"){
+    $opts = array('http' =>
+        array(
+            'method'  => 'GET',
+            'header'  => 'Authorization: Bearer '.$token["access_token"]       
+        )
+    );
 
-// capture and display error
-if($tweets["errors"][0]["message"] != "") {echo "<h3>Sorry, there was a problem.</h3><p>Twitter returned the following error message:</p><p><em>".$tweets[errors][0]["message"]."</em></p>";exit();}
+    $context  = stream_context_create($opts);
 
-// display returned json formatted data
-// echo "<pre>";
-// print_r($tweets);
-// echo "</pre>";
+    $data = file_get_contents($api_endpoint, false, $context);
+
+    //print $data;
+
+    // get Json data and return an array - true is needed.
+    $tweets = json_decode($data, true);
+
+   // display returned json formatted data
+   // echo "<pre>";
+   //     print_r($tweets);
+   // echo "</pre>";
+
+    // capture and display error
+    //if($tweets["errors"][0]["message"] != "") {echo "<h3>Sorry, there was a problem.</h3><p>Twitter returned the following error message:</p><p><em>".$tweets[errors][0]["message"]."</em></p>";exit();}
+
+}
 
 ?>
+
 
 <!DOCTYPE html>
 <html>
@@ -76,7 +80,7 @@ if($tweets["errors"][0]["message"] != "") {echo "<h3>Sorry, there was a problem.
     <nav>
         <div class="clearfix">
             <img style="position: absolute;right:0px;height:35px;padding:15px;float:left;padding-right:20px;" src="./images/twitter_logo.png"/>
-            <h2 style="padding-left:5px;">@<?php echo $TwitterAccount ?> Twitter</h2>
+            <h2 style="padding-left:5px;">@_ACCOUNT Twitter</h2>
         </div>
     </nav>
 
@@ -87,7 +91,6 @@ if($tweets["errors"][0]["message"] != "") {echo "<h3>Sorry, there was a problem.
 
     <?php 
     for ($index = 0; $index <= count($tweets)-1; $index++) {
-        
         $createdAt = $tweets[$index]["created_at"];
         $tweetText = $tweets[$index]["text"];
         $media = $tweets[$index]["entities"]["media"][0]["media_url"];
@@ -110,27 +113,22 @@ if($tweets["errors"][0]["message"] != "") {echo "<h3>Sorry, there was a problem.
         echo '<div class="clearfix">';
         echo '<div class="tweetImageDiv">';
             if ($video)
-                echo '<video style="padding:5px;" width="310" controls poster="' . $media . '"><source src="' . $video . '" type="video/mp4">Your browser does not support the video tag.</video>';
+                echo '<video style="padding:3px;" width="190px" controls poster="' . $media . '"><source src="' . $video . '" type="video/mp4">Your browser does not support the video tag.</video>';
             elseif ($media) {
-                echo '<img style="width:310px;padding:5px;" src="' . $media . '"/>';
+                echo '<img style="width:190px;padding:3px;" src="' . $media . '"/>';
             } else {
-                echo '<img style="height:50px;padding:15px;margin-left:120px;" src="./images/twitter_logo.png"/>';
+                echo '<img style="height:50px;padding:15px;margin-left:50px;" src="./images/twitter_logo.png"/>';
             }
         echo '</div>';
         echo '<div class="tweetText">';
-            echo '<p style="word-wrap:break-word;margin-right:10px;margin-top:5px;">' . $tweetTextWithLink . '</p>';
-            echo '<span style="font-size:0.8em;">' . substr($createdAt,0,16) . '</span>'; 
+            echo '<p style="word-wrap:break-word;margin-right:0px;margin-top:0px;">' . $tweetTextWithLink . '</p>';
+            echo '<span style="font-size:0.7em;line-height:3em;">' . substr($createdAt,0,16) . '</span>'; 
         echo '</div>';
         echo '</div>';
         echo '<hr/>';
     };
     ?>
 
-    <footer>
-        <p>&copy; 2016 Robert Giffin.</p>
-    </footer>
 </body>
 </html>
 
-
- 
